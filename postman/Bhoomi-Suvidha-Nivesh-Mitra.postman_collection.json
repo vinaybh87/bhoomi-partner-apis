@@ -1,0 +1,137 @@
+{
+  "info": {
+    "name": "Bhoomi Suvidha — Nivesh Mitra 3.0 Integration",
+    "description": "APIs: get a token, submit an application for AI analysis, re-fetch a result, and report payment status (with ServiceNo). Set `username`/`password` in the collection variables (or right in the first request's body) before running.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://bhoomi-suvidha.kenpath.ai/apis" },
+    { "key": "username", "value": "<your-username>" },
+    { "key": "password", "value": "<your-password>" },
+    { "key": "applicationId", "value": "<applicationId>" },
+    { "key": "token", "value": "" },
+    { "key": "analysisId", "value": "" },
+    { "key": "serviceNo", "value": "SER20260417/1000/14391/175411" }
+  ],
+  "item": [
+    {
+      "name": "1. Get a token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const body = pm.response.json();",
+              "    pm.collectionVariables.set('token', body.token);",
+              "    console.log('Saved token to {{token}} for the next requests.');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\",\n  \"userId\": \"{{applicationId}}\",\n  \"name\": \"<applicant-name>\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/token",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "token"]
+        },
+        "description": "Returns { token, token_type, expires_in }. The token is auto-saved to {{token}} by the test script above, so you can run requests 2 and 3 right after without copy-pasting."
+      }
+    },
+    {
+      "name": "2. Submit for analysis",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const body = pm.response.json();",
+              "    pm.collectionVariables.set('analysisId', body.analysisId);",
+              "    console.log('Saved analysisId to {{analysisId}} for request 3.');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"applicationId\": \"{{applicationId}}\",\n  \"submissionSequence\": 1,\n  \"applicant\": {\n    \"entityType\": \"<e.g. Partnership / Private Limited Company>\",\n    \"companyName\": \"<company name>\",\n    \"cin\": \"<CIN>\",\n    \"pan\": \"<company PAN>\",\n    \"gstin\": \"<GSTIN>\",\n    \"authorizedSignatory\": { \"name\": \"<name>\", \"pan\": \"<PAN>\" }\n  },\n  \"application\": {\n    \"username\": \"<applicant name>\",\n    \"district\": \"<district>\",\n    \"industrialArea\": \"<industrial area>\",\n    \"plotCategory\": \"<category>\",\n    \"landAreaSqm\": 0,\n    \"proposedInvestmentINR\": 0,\n    \"proposedLandInvestmentINR\": 0,\n    \"proposedBuildingInvestmentINR\": 0,\n    \"proposedEmployment\": 0,\n    \"sector\": \"<sector>\",\n    \"formData\": {}\n  },\n  \"documents\": [\n    { \"docType\": \"DPR\", \"fileName\": \"dpr.pdf\", \"url\": \"<pre-signed URL>\", \"sha256\": \"<checksum>\" },\n    { \"docType\": \"AADHAAR\", \"fileName\": \"aadhaar.pdf\", \"url\": \"<pre-signed URL>\", \"sha256\": \"<checksum>\" },\n    { \"docType\": \"PAN\", \"fileName\": \"pan.pdf\", \"url\": \"<pre-signed URL>\", \"sha256\": \"<checksum>\" }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/analysis",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "analysis"]
+        },
+        "description": "Returns the full discrepancy report immediately (checks, thirdPartyVerification, applicantHistory) plus analysisId, auto-saved to {{analysisId}} for request 3."
+      }
+    },
+    {
+      "name": "3. Check status / re-fetch a result",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1/analysis/{{analysisId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "analysis", "{{analysisId}}"]
+        },
+        "description": "Returns the identical response from request 2, for the given analysisId. 404 if it doesn't exist."
+      }
+    },
+    {
+      "name": "4. Report payment status",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"applicationId\": \"{{applicationId}}\",\n  \"status\": true,\n  \"ServiceNo\": \"{{serviceNo}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/payment-status",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "payment-status"]
+        },
+        "description": "Nivesh Mitra payment-complete signal. Body: applicationId, status (boolean), optional ServiceNo. Returns { applicationId, status, paymentConfirmedAt, ServiceNo }. Only status=true is persisted as paid."
+      }
+    },
+    {
+      "name": "5. Get payment status",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1/payment-status/{{applicationId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "payment-status", "{{applicationId}}"]
+        },
+        "description": "Returns stored payment status for the most recent submission of this applicationId: { applicationId, status, paymentConfirmedAt, ServiceNo }."
+      }
+    }
+  ]
+}

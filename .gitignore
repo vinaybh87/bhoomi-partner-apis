@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build and test output
+dist/
+coverage/
+*.tsbuildinfo
+
+# Local environment files and credentials. Keep the safe template in Git.
+.env
+.env.*
+!.env.example
+keys/*.pem
+
+# Runtime logs and process files
+*.log
+logs/
+*.pid
+*.pid.lock
+
+# Package-manager caches
+.npm/
+.yarn/
+.pnpm-store/
+
+# Local editor and operating-system files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

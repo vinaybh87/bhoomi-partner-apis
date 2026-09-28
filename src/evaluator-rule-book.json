@@ -1,0 +1,359 @@
+{
+  "schemaVersion": 1,
+  "ruleBookVersion": "2026-05-26",
+  "title": "UPSIDA Land Allotment Marking Criteria",
+  "authority": "UPSIDA",
+  "effectiveDate": "2026-05-26",
+  "sourceDocument": "/docs/scoring-framework.pdf",
+  "passMark": 60,
+  "categories": [
+    {
+      "key": "A",
+      "label": "Plots Up to 500 sq.m",
+      "maxAreaInclusive": 500,
+      "maxScore": 100,
+      "criteria": [
+        {
+          "key": "investment_ratio",
+          "label": "Investment vs Land Cost",
+          "max": 20,
+          "evaluator": "investmentRatio",
+          "params": {
+            "investmentFields": ["land_and_building_lacs", "plant_and_machinery_lacs"],
+            "tiers": [
+              { "minimum": 5, "exclusive": true, "score": 20 },
+              { "minimum": 5, "score": 15 },
+              { "minimum": 3, "score": 10 },
+              { "minimum": 2, "score": 5 }
+            ],
+            "missingNote": "Add building + P&M cost to DPR"
+          },
+          "scoring": [
+            "Capital = Building cost + Plant & Machinery cost",
+            "Ratio = Capital / Land cost",
+            "Ratio > 5x -> 20 marks",
+            "Ratio = 5x -> 15 marks",
+            "Ratio >= 3x -> 10 marks",
+            "Ratio >= 2x -> 5 marks"
+          ]
+        },
+        {
+          "key": "direct_employment",
+          "label": "Direct Employment",
+          "max": 20,
+          "evaluator": "directEmployment",
+          "params": {
+            "fields": ["direct_employment_count", "total_employees"],
+            "employeesPerMark": 5,
+            "missingNote": "Add direct employee count to DPR"
+          },
+          "scoring": [
+            "1 mark per 5 direct employees",
+            "e.g. 50 employees -> 10 marks",
+            "Capped at 20 marks (100+ employees)"
+          ]
+        },
+        {
+          "key": "time_to_production",
+          "label": "Time to Start Production",
+          "max": 20,
+          "evaluator": "maximumTiers",
+          "params": {
+            "field": "time_to_production_months",
+            "unit": "months",
+            "tiers": [
+              { "maximum": 12, "score": 20 },
+              { "maximum": 18, "score": 15 },
+              { "maximum": 24, "score": 10 }
+            ],
+            "requirePositive": true,
+            "missingNote": "Add implementation timeline to DPR"
+          },
+          "scoring": [
+            "<= 12 months -> 20 marks",
+            "<= 18 months -> 15 marks",
+            "<= 24 months -> 10 marks",
+            "> 24 months -> 0 marks"
+          ]
+        },
+        {
+          "key": "promoter_experience",
+          "label": "Industrial Experience of Promoter",
+          "max": 10,
+          "evaluator": "yearsOfExperience",
+          "params": {
+            "field": "promoter_experience_years",
+            "pointsPerYear": 1,
+            "missingNote": "Add promoter experience years to DPR"
+          },
+          "scoring": [
+            "1 mark per year of industrial/business experience",
+            "e.g. 8 years -> 8 marks",
+            "Capped at 10 marks (10+ years)"
+          ]
+        },
+        {
+          "key": "expansion_unit",
+          "label": "Expansion in Same Industrial Area",
+          "max": 10,
+          "optional": true,
+          "evaluator": "exactValue",
+          "params": {
+            "field": "is_expansion_unit",
+            "expectedValue": "yes",
+            "score": 10,
+            "matchedNote": "Existing unit seeking expansion",
+            "unmatchedNote": "Not applicable"
+          },
+          "scoring": [
+            "Existing unit expanding within same UPSIDA industrial area",
+            "Yes -> 10 marks",
+            "No -> 0 marks (optional)"
+          ]
+        },
+        {
+          "key": "export_oriented",
+          "label": "100% Export-Oriented Unit",
+          "max": 10,
+          "optional": true,
+          "evaluator": "minimumValue",
+          "params": {
+            "field": "export_turnover_percent",
+            "minimum": 100,
+            "score": 10,
+            "unit": "% export turnover",
+            "emptyNote": "Not applicable"
+          },
+          "scoring": [
+            "Export turnover = 100% of total annual turnover (certificate from Directorate of Industries and Export Promotion Council required)",
+            "Yes -> 10 marks",
+            "No -> 0 marks (optional)"
+          ]
+        },
+        {
+          "key": "entrepreneur_category",
+          "label": "Women / SC / ST / Differently-Abled",
+          "max": 5,
+          "optional": true,
+          "evaluator": "allowedValues",
+          "params": {
+            "field": "entrepreneur_category",
+            "allowedValues": ["women", "sc", "st", "differently-abled"],
+            "score": 5,
+            "matchedNotePrefix": "Category: ",
+            "unmatchedNote": "Not applicable"
+          },
+          "scoring": [
+            "Promoter category: Women / SC / ST / Differently-Abled -> 5 marks",
+            "General category -> 0 marks (optional)"
+          ]
+        },
+        {
+          "key": "net_worth_turnover",
+          "label": "Net Worth / Turnover > Rs.10 Cr",
+          "max": 5,
+          "evaluator": "anyFieldMinimum",
+          "params": {
+            "fields": ["net_worth_crore", "turnover_crore"],
+            "minimum": 10,
+            "exclusive": true,
+            "score": 5,
+            "unitPrefix": "Rs.",
+            "unitSuffix": " Cr",
+            "missingNote": "Add audited net worth or turnover figures to DPR",
+            "belowNoteSuffix": " (below Rs.10 Cr threshold)"
+          },
+          "scoring": [
+            "Either net worth OR annual turnover (preceding year) exceeds Rs.10 Crore",
+            "Yes (either > Rs.10 Cr) -> 5 marks",
+            "No (both <= Rs.10 Cr) -> 0 marks"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "B",
+      "label": "Plots Above 500 sq.m",
+      "minAreaExclusive": 500,
+      "maxScore": 100,
+      "criteria": [
+        {
+          "key": "investment_ratio",
+          "label": "Proposed Capital Investment on Construction of Building and Plants & Machineries",
+          "max": 10,
+          "evaluator": "investmentRatio",
+          "params": {
+            "investmentFields": ["land_and_building_lacs", "plant_and_machinery_lacs"],
+            "tiers": [
+              { "minimum": 5, "exclusive": true, "score": 10 },
+              { "minimum": 5, "score": 8 },
+              { "minimum": 3, "score": 6 },
+              { "minimum": 2, "score": 4 }
+            ],
+            "missingNote": "Add building + P&M investment to DPR"
+          },
+          "scoring": [
+            "Capital = Building cost + Plant & Machinery cost",
+            "Ratio = Capital / Land cost",
+            "Ratio > 5x -> 10 marks",
+            "Ratio = 5x -> 8 marks",
+            "Ratio >= 3x -> 6 marks",
+            "Ratio >= 2x -> 4 marks"
+          ]
+        },
+        {
+          "key": "liquidity",
+          "label": "Liquidity of the Applicant",
+          "max": 20,
+          "evaluator": "certifiedMinimumTiers",
+          "params": {
+            "field": "liquidity_percent",
+            "certificationField": "liquidity_udin",
+            "certificationValue": "yes",
+            "unit": "% of investment",
+            "tiers": [
+              { "minimum": 20, "exclusive": true, "score": 20 },
+              { "minimum": 10, "exclusive": true, "score": 10 }
+            ],
+            "missingNote": "CA certificate missing",
+            "uncertifiedNote": "Liquidity found but UDIN certification missing"
+          },
+          "scoring": [
+            "Must be CA-certified with UDIN number",
+            "Liquidity > 20% + UDIN -> 20 marks",
+            "Liquidity > 10% + UDIN -> 10 marks",
+            "No UDIN or <= 10% -> 0 marks"
+          ]
+        },
+        {
+          "key": "direct_employment",
+          "label": "Employment Generation (Direct Employment)",
+          "max": 10,
+          "evaluator": "directEmployment",
+          "params": {
+            "fields": ["direct_employment_count", "total_employees"],
+            "employeesPerMark": 10,
+            "missingNote": "Add direct employee count to DPR"
+          },
+          "scoring": [
+            "1 mark per 10 direct employees",
+            "e.g. 50 employees -> 5 marks",
+            "Capped at 10 marks (100+ employees)"
+          ]
+        },
+        {
+          "key": "promoter_experience",
+          "label": "Industrial Experience",
+          "max": 20,
+          "evaluator": "yearsOfExperience",
+          "params": {
+            "field": "promoter_experience_years",
+            "pointsPerYear": 1,
+            "missingNote": "Add promoter experience years to DPR"
+          },
+          "scoring": [
+            "1 mark per year of industrial/business experience",
+            "e.g. 12 years -> 12 marks",
+            "Capped at 20 marks (20+ years)"
+          ]
+        },
+        {
+          "key": "expansion_unit",
+          "label": "Requirement of Additional Land for Extension of Unit in Same Industrial Area or for Expansion of Unit",
+          "max": 10,
+          "optional": true,
+          "evaluator": "exactValue",
+          "params": {
+            "field": "is_expansion_unit",
+            "expectedValue": "yes",
+            "score": 10,
+            "matchedNote": "Existing unit seeking expansion",
+            "unmatchedNote": "Not applicable"
+          },
+          "scoring": [
+            "Existing unit expanding within same UPSIDA industrial area",
+            "Yes -> 10 marks",
+            "No -> 0 marks (optional)"
+          ]
+        },
+        {
+          "key": "export_oriented",
+          "label": "Minimum Threshold Export Percentage of Total Turnover of Atleast 15% (Certificate from Directorate of Industries and Export Promotion Council is Mandatory)",
+          "max": 5,
+          "optional": true,
+          "evaluator": "minimumValue",
+          "params": {
+            "field": "export_turnover_percent",
+            "minimum": 15,
+            "score": 5,
+            "unit": "% export turnover",
+            "emptyNote": "Not applicable"
+          },
+          "scoring": [
+            "Export turnover >= 15% of total annual turnover",
+            "Yes -> 5 marks",
+            "No -> 0 marks (optional)"
+          ]
+        },
+        {
+          "key": "entrepreneur_category",
+          "label": "Female Entrepreneur / SC / ST / Physically Challenged Entrepreneur (In Case of Company/Partnership Firm This Category Should be Minimum 26% Shareholding)",
+          "max": 5,
+          "optional": true,
+          "evaluator": "allowedValues",
+          "params": {
+            "field": "entrepreneur_category",
+            "allowedValues": ["women", "sc", "st", "differently-abled"],
+            "score": 5,
+            "matchedNotePrefix": "Category: ",
+            "unmatchedNote": "Not applicable"
+          },
+          "scoring": [
+            "Promoter category: Women / SC / ST / Differently-Abled -> 5 marks",
+            "General category -> 0 marks (optional)"
+          ]
+        },
+        {
+          "key": "net_worth_turnover",
+          "label": "Net Worth or Turnover of Applicant for Last 3 Financial Years is More Than Rs. 25 Crores",
+          "max": 15,
+          "evaluator": "anyFieldMinimum",
+          "params": {
+            "fields": ["net_worth_crore", "turnover_crore"],
+            "minimum": 25,
+            "exclusive": true,
+            "score": 15,
+            "unitPrefix": "Rs.",
+            "unitSuffix": " Cr",
+            "missingNote": "Turnover not >= Rs.25 Cr",
+            "belowNoteSuffix": " (below Rs.25 Cr threshold)"
+          },
+          "scoring": [
+            "Either net worth OR annual turnover exceeds Rs.25 Crore",
+            "Yes (either > Rs.25 Cr) -> 15 marks",
+            "No (both <= Rs.25 Cr) -> 0 marks"
+          ]
+        },
+        {
+          "key": "fdi_proposal",
+          "label": "If Any Applicant Proposes to Bring in FDI Investment",
+          "max": 5,
+          "optional": true,
+          "evaluator": "exactValue",
+          "params": {
+            "field": "fdi_proposal",
+            "expectedValue": "yes",
+            "score": 5,
+            "matchedNote": "FDI proposed",
+            "unmatchedNote": "Not applicable"
+          },
+          "scoring": [
+            "Foreign Direct Investment proposed in the project",
+            "Yes -> 5 marks",
+            "No -> 0 marks (optional)"
+          ]
+        }
+      ]
+    }
+  ]
+}
