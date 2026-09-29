@@ -34,6 +34,7 @@ jobs:
         shell: bash
         run: |
           release_id="$(git rev-parse --short=12 HEAD)"
+          archive="$RUNNER_TEMP/bhoomi-partner-apis-${release_id}.tar.gz"
           echo "RELEASE_ID=$release_id" >> "$GITHUB_ENV"
           tar \
             --exclude='.git' \
@@ -42,7 +43,8 @@ jobs:
             --exclude='keys' \
             --exclude='node_modules' \
             --exclude='logs' \
-            -czf "bhoomi-partner-apis-${release_id}.tar.gz" .
+            -czf "$archive" .
+          mv "$archive" "bhoomi-partner-apis-${release_id}.tar.gz"
           sha256sum "bhoomi-partner-apis-${release_id}.tar.gz" > "bhoomi-partner-apis-${release_id}.sha256"
       - name: Configure SSH
         shell: bash
