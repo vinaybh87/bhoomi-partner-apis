@@ -42,6 +42,15 @@ curl --fail https://bhoomi-suvidha.kenpath.ai/apis/health
 pm2 show bhoomi-partner-apis
 ```
 
+Run the authenticated, non-payment production smoke test with a dedicated test
+account:
+
+```bash
+SMOKE_USERNAME=<dedicated-user> \
+SMOKE_PASSWORD=<dedicated-password> \
+npm run smoke-production
+```
+
 To roll back, point `current` to a previously validated release and reload PM2:
 
 ```bash

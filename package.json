@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx test/integration-helpers.test.ts",
     "preflight": "tsx scripts/preflight.ts",
+    "smoke-production": "tsx scripts/smoke-production.ts",
     "seed-client": "tsx src/seed-client.ts",
     "health-check": "tsx scripts/daily-health.ts"
   },
