@@ -8,7 +8,6 @@ import { getPrivateKey, getPublicKey } from './keys.js';
 import {
   runChecks,
   buildThirdPartyVerification,
-  buildApplicantHistory,
   buildInvestorStages,
   buildChecksEnglishResponse,
   type DprExtraction,
@@ -32,6 +31,7 @@ import { fetchDocumentBuffer } from './fetch-document.js';
 import { isMinioEnabled, storeDocument, type StoredDocument } from './minio-store.js';
 import { emitAlertBackground } from './alerts.js';
 import { completeAnalysisResponse } from './analysis-payload.js';
+import { lookupAllotmentHistory } from './allotment-history.js';
 
 const PORT = Number(process.env.PORT || 8010);
 const JWT_ISSUER = process.env.JWT_ISSUER || 'bhoomi-suvidha-partner-apis';
@@ -691,9 +691,30 @@ app.post('/v1/analysis', requireAuth, async (req, res) => {
       (identityExtraction?.summary ?? 'Identity OCR was not run.') + priorIdentityNote,
   };
 
+  // The external history calls intentionally start only after all OCR extraction
+  // has completed. Their result is persisted and later used in UPSIDA HTMLDetails.
+  const historyPan = (() => {
+    const p = identityExtraction?.pan as { pan_number?: string } | null | undefined;
+    return p?.pan_number ? String(p.pan_number).replace(/\s+/g, '').toUpperCase() : null;
+  })();
+  const historyApplicant = (applicant ?? {}) as {
+    pan?: string | null;
+    cin?: string | null;
+    gstin?: string | null;
+    gst?: string | null;
+    companyName?: string | null;
+  };
+  const applicantHistory = await lookupAllotmentHistory([
+    historyPan,
+    historyApplicant.pan,
+    historyApplicant.cin,
+    historyApplicant.gstin ?? historyApplicant.gst,
+    extraction?.company_name,
+    historyApplicant.companyName,
+  ]);
+
   const checks = await runChecks(application ?? {}, extraction, fetchedDocTypes, identityValidity);
   const thirdPartyVerification = buildThirdPartyVerification();
-  const applicantHistory = buildApplicantHistory();
   const stages = buildInvestorStages(checks, thirdPartyVerification);
   const checksEnglish = buildChecksEnglishResponse(stages, thirdPartyVerification, applicantHistory);
   const companyName = (applicant as { companyName?: string } | undefined)?.companyName;

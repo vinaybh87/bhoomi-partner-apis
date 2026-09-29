@@ -423,14 +423,25 @@ export function buildMockMcaVerification(opts: {
   };
 }
 
-/** Mock history: only whether the applicant had applied before. */
-export function buildMockHistoryVerification(applicationId: string): HistoryVerification {
-  // Stable mock: alternate by last hex char of id
-  const last = (applicationId.replace(/-/g, '').slice(-1) || '0').toLowerCase();
-  const hasAppliedBefore = '01234567'.includes(last);
+function historyFromAnalysis(storedResponse: unknown): HistoryVerification {
+  const response = storedResponse && typeof storedResponse === 'object'
+    ? storedResponse as Record<string, unknown>
+    : {};
+  const history = response.applicantHistory && typeof response.applicantHistory === 'object'
+    ? response.applicantHistory as Record<string, unknown>
+    : {};
+  const priorApplications = Array.isArray(history.priorApplications)
+    ? history.priorApplications.filter((item) => item && typeof item === 'object')
+    : [];
+  const unavailable = history.status === 'UNAVAILABLE';
+  const hasAppliedBefore = history.hasAppliedBefore === true && priorApplications.length > 0;
   return {
+    status: unavailable ? 'UNAVAILABLE' : hasAppliedBefore ? 'FOUND' : 'NO_PRIOR_APPLICATION',
     hasAppliedBefore,
-    message: hasAppliedBefore ? 'Had applied before' : 'Had not applied before',
+    message: unavailable
+      ? 'History lookup unavailable.'
+      : hasAppliedBefore ? 'Prior land allotments found.' : 'No prior application.',
+    priorApplications: priorApplications as HistoryVerification['priorApplications'],
   };
 }
 
@@ -449,7 +460,7 @@ function buildPayload(
     applicationId,
     companyName: opts?.companyName,
   });
-  const historyVerification = buildMockHistoryVerification(applicationId);
+  const historyVerification = historyFromAnalysis(opts?.storedResponse);
 
   const scored = marks.rows.map((row) => ({
     parameter: upsidaMarksParameterName(row),

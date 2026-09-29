@@ -347,10 +347,17 @@ export function buildThirdPartyVerification(): ThirdPartyVerification {
   };
 }
 
+export interface PriorApplication {
+  applicantId: string;
+  industryType: string | null;
+  landDetails: unknown;
+  buildingDetails: unknown;
+}
+
 export interface ApplicantHistory {
-  status: 'NOT_INTEGRATED';
-  hasAppliedBefore: null;
-  priorApplications: [];
+  status: 'NOT_INTEGRATED' | 'FOUND' | 'NO_PRIOR_APPLICATION' | 'UNAVAILABLE';
+  hasAppliedBefore: boolean | null;
+  priorApplications: PriorApplication[];
   note: string;
 }
 

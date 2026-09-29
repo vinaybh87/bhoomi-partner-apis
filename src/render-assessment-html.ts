@@ -14,8 +14,15 @@ export type McaVerification = {
 };
 
 export type HistoryVerification = {
+  status: 'FOUND' | 'NO_PRIOR_APPLICATION' | 'UNAVAILABLE';
   hasAppliedBefore: boolean;
   message: string;
+  priorApplications: {
+    applicantId?: unknown;
+    industryType?: unknown;
+    landDetails?: unknown;
+    buildingDetails?: unknown;
+  }[];
 };
 
 export type AssessmentHtmlInput = {
@@ -650,16 +657,27 @@ export function renderAssessmentHtml(data: AssessmentHtmlInput): string {
   ${(() => {
     const hist = data.historyVerification;
     const applied = hist?.hasAppliedBefore === true;
-    const msg =
-      hist?.message ||
-      (applied ? 'Had applied before' : 'Had not applied before');
+    const unavailable = hist?.status === 'UNAVAILABLE';
+    const msg = hist?.message || (applied ? 'Prior land allotments found.' : 'No prior application.');
+    const projects = hist?.priorApplications || [];
+    const projectRows = projects.map((project) => `<tr>
+      <td>${esc(project.applicantId)}</td>
+      <td>${esc(project.industryType)}</td>
+      <td>${esc(project.landDetails)}</td>
+      <td>${esc(project.buildingDetails)}</td>
+    </tr>`).join('');
+    const badge = unavailable ? 'badge-warn' : applied ? 'badge-warn' : 'badge-ok';
+    const label = unavailable ? 'Lookup unavailable' : applied ? 'Prior application' : 'No prior application';
     return `<details class="section">
-    <summary><span class="title-left">History verification <span class="badge ${applied ? 'badge-warn' : 'badge-ok'}">${applied ? 'Prior application' : 'No prior application'}</span></span></summary>
+    <summary><span class="title-left">History verification <span class="badge ${badge}">${label}</span></span></summary>
     <div class="body">
-      <div class="card ${applied ? 'card-warn' : 'card-ok'}">
-        <h3>Application history</h3>
+      <div class="card ${applied || unavailable ? 'card-warn' : 'card-ok'}">
+        <h3>Lands allotted for this applicant</h3>
         <p class="narrative" style="margin:0;font-weight:700;color:var(--text)">${esc(msg)}</p>
-        <p class="narrative" style="margin-top:8px">Has applied before: <strong>${applied ? 'Yes' : 'No'}</strong></p>
+        ${projects.length ? `<div class="table-wrap" style="margin-top:14px"><table class="data">
+          <thead><tr><th>Applicant ID</th><th>Industry Type</th><th>Land Details</th><th>Building Details</th></tr></thead>
+          <tbody>${projectRows}</tbody>
+        </table></div>` : ''}
       </div>
     </div>
   </details>`;

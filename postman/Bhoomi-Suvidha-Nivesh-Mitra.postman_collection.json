@@ -1,66 +1,128 @@
 {
   "info": {
-    "name": "Bhoomi Suvidha — Nivesh Mitra 3.0 Integration",
-    "description": "APIs: get a token, submit an application for AI analysis, re-fetch a result, and report payment status (with ServiceNo). Set `username`/`password` in the collection variables (or right in the first request's body) before running.",
+    "_postman_id": "3a74937a-38ce-4e3c-a855-a2e30364f867",
+    "name": "Bhoomi Suvidha - Production API Verification",
+    "description": "Production-safe verification collection. Set the password collection variable, then run requests in order. JWT and analysisId are saved automatically. Payment uses status=false. The final legacy flags test is expected to fail until the production new_form table exists.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get('applicationId')) {",
+          "    pm.collectionVariables.set('applicationId', `postman-test-${Date.now()}`);",
+          "}"
+        ]
+      }
+    }
+  ],
   "variable": [
-    { "key": "baseUrl", "value": "https://bhoomi-suvidha.kenpath.ai/apis" },
-    { "key": "username", "value": "<your-username>" },
-    { "key": "password", "value": "<your-password>" },
-    { "key": "applicationId", "value": "<applicationId>" },
-    { "key": "token", "value": "" },
-    { "key": "analysisId", "value": "" },
-    { "key": "serviceNo", "value": "SER20260417/1000/14391/175411" }
+    { "key": "baseUrl", "value": "https://bhoomi-suvidha.kenpath.ai/apis", "type": "string" },
+    { "key": "username", "value": "deployment-smoke", "type": "string" },
+    { "key": "password", "value": "", "type": "string" },
+    { "key": "applicationId", "value": "", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "analysisId", "value": "", "type": "string" }
   ],
   "item": [
     {
-      "name": "1. Get a token",
+      "name": "1. Health check",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "if (pm.response.code === 200) {",
-              "    const body = pm.response.json();",
-              "    pm.collectionVariables.set('token', body.token);",
-              "    console.log('Saved token to {{token}} for the next requests.');",
-              "}"
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Service reports ok', () => pm.expect(pm.response.json().status).to.eql('ok'));"
             ]
           }
         }
       ],
       "request": {
+        "auth": { "type": "noauth" },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Public liveness check."
+      }
+    },
+    {
+      "name": "2. Generate JWT",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (!pm.collectionVariables.get('password')) {",
+              "    throw new Error('Set the password collection variable before running.');",
+              "}"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('Bearer token returned', () => {",
+              "    pm.expect(body.token_type).to.eql('Bearer');",
+              "    pm.expect(body.token).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.collectionVariables.set('token', body.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": { "type": "noauth" },
         "method": "POST",
         "header": [
-          { "key": "Content-Type", "value": "application/json" }
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\",\n  \"userId\": \"{{applicationId}}\",\n  \"name\": \"<applicant-name>\"\n}"
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\",\n  \"userId\": \"{{applicationId}}\",\n  \"name\": \"Postman API Test\"\n}",
+          "options": { "raw": { "language": "json" } }
         },
         "url": {
           "raw": "{{baseUrl}}/auth/token",
           "host": ["{{baseUrl}}"],
           "path": ["auth", "token"]
         },
-        "description": "Returns { token, token_type, expires_in }. The token is auto-saved to {{token}} by the test script above, so you can run requests 2 and 3 right after without copy-pasting."
+        "description": "Authenticates and saves the returned JWT in the token collection variable."
       }
     },
     {
-      "name": "2. Submit for analysis",
+      "name": "3. Submit analysis",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "if (pm.response.code === 200) {",
-              "    const body = pm.response.json();",
-              "    pm.collectionVariables.set('analysisId', body.analysisId);",
-              "    console.log('Saved analysisId to {{analysisId}} for request 3.');",
-              "}"
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('Analysis identifiers returned', () => {",
+              "    pm.expect(body.analysisId).to.be.a('string').and.not.empty;",
+              "    pm.expect(body.applicationId).to.eql(pm.collectionVariables.get('applicationId'));",
+              "});",
+              "pm.collectionVariables.set('analysisId', body.analysisId);"
             ]
           }
         }
@@ -68,69 +130,166 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{token}}" },
-          { "key": "Content-Type", "value": "application/json" }
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"applicationId\": \"{{applicationId}}\",\n  \"submissionSequence\": 1,\n  \"applicant\": {\n    \"entityType\": \"<e.g. Partnership / Private Limited Company>\",\n    \"companyName\": \"<company name>\",\n    \"cin\": \"<CIN>\",\n    \"pan\": \"<company PAN>\",\n    \"gstin\": \"<GSTIN>\",\n    \"authorizedSignatory\": { \"name\": \"<name>\", \"pan\": \"<PAN>\" }\n  },\n  \"application\": {\n    \"username\": \"<applicant name>\",\n    \"district\": \"<district>\",\n    \"industrialArea\": \"<industrial area>\",\n    \"plotCategory\": \"<category>\",\n    \"landAreaSqm\": 0,\n    \"proposedInvestmentINR\": 0,\n    \"proposedLandInvestmentINR\": 0,\n    \"proposedBuildingInvestmentINR\": 0,\n    \"proposedEmployment\": 0,\n    \"sector\": \"<sector>\",\n    \"formData\": {}\n  },\n  \"documents\": [\n    { \"docType\": \"DPR\", \"fileName\": \"dpr.pdf\", \"url\": \"<pre-signed URL>\", \"sha256\": \"<checksum>\" },\n    { \"docType\": \"AADHAAR\", \"fileName\": \"aadhaar.pdf\", \"url\": \"<pre-signed URL>\", \"sha256\": \"<checksum>\" },\n    { \"docType\": \"PAN\", \"fileName\": \"pan.pdf\", \"url\": \"<pre-signed URL>\", \"sha256\": \"<checksum>\" }\n  ]\n}"
+          "raw": "{\n  \"applicationId\": \"{{applicationId}}\",\n  \"submissionSequence\": 1,\n  \"applicant\": {\n    \"entityType\": \"Private Limited Company\",\n    \"companyName\": \"Postman API Test\"\n  },\n  \"application\": {\n    \"username\": \"Postman API Test\",\n    \"district\": \"Test\",\n    \"industrialArea\": \"Test\",\n    \"plotCategory\": \"Test\",\n    \"landAreaSqm\": 0,\n    \"proposedInvestmentINR\": 0,\n    \"proposedLandInvestmentINR\": 0,\n    \"proposedBuildingInvestmentINR\": 0,\n    \"proposedEmployment\": 0,\n    \"sector\": \"Test\",\n    \"formData\": {}\n  },\n  \"documents\": []\n}",
+          "options": { "raw": { "language": "json" } }
         },
         "url": {
           "raw": "{{baseUrl}}/v1/analysis",
           "host": ["{{baseUrl}}"],
           "path": ["v1", "analysis"]
         },
-        "description": "Returns the full discrepancy report immediately (checks, thirdPartyVerification, applicantHistory) plus analysisId, auto-saved to {{analysisId}} for request 3."
+        "description": "Creates a minimal analysis and saves analysisId for subsequent requests."
       }
     },
     {
-      "name": "3. Check status / re-fetch a result",
+      "name": "4. Retrieve analysis JSON",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Stored analysis returned', () => pm.expect(pm.response.json().analysisId).to.eql(pm.collectionVariables.get('analysisId')));"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{token}}" }
-        ],
+        "header": [],
         "url": {
           "raw": "{{baseUrl}}/v1/analysis/{{analysisId}}",
           "host": ["{{baseUrl}}"],
           "path": ["v1", "analysis", "{{analysisId}}"]
         },
-        "description": "Returns the identical response from request 2, for the given analysisId. 404 if it doesn't exist."
+        "description": "Retrieves the stored analysis as JSON."
       }
     },
     {
-      "name": "4. Report payment status",
+      "name": "5. Retrieve analysis HTML",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Non-empty HTML returned', () => {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html');",
+              "    pm.expect(pm.response.text().trim()).not.empty;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/analysis/{{analysisId}}?format=html",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "analysis", "{{analysisId}}"],
+          "query": [
+            { "key": "format", "value": "html" }
+          ]
+        },
+        "description": "Retrieves the rendered HTML report."
+      }
+    },
+    {
+      "name": "6. Update payment status safely",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Payment remains unconfirmed', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.applicationId).to.eql(pm.collectionVariables.get('applicationId'));",
+              "    pm.expect(body.status).to.eql(false);",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{token}}" },
-          { "key": "Content-Type", "value": "application/json" }
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"applicationId\": \"{{applicationId}}\",\n  \"status\": true,\n  \"ServiceNo\": \"{{serviceNo}}\"\n}"
+          "raw": "{\n  \"applicationId\": \"{{applicationId}}\",\n  \"status\": false\n}",
+          "options": { "raw": { "language": "json" } }
         },
         "url": {
           "raw": "{{baseUrl}}/v1/payment-status",
           "host": ["{{baseUrl}}"],
           "path": ["v1", "payment-status"]
         },
-        "description": "Nivesh Mitra payment-complete signal. Body: applicationId, status (boolean), optional ServiceNo. Returns { applicationId, status, paymentConfirmedAt, ServiceNo }. Only status=true is persisted as paid."
+        "description": "Safe test. status=false does not trigger evaluation or UPSIDA delivery."
       }
     },
     {
-      "name": "5. Get payment status",
+      "name": "7. Retrieve payment and evaluation status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Payment status returned', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.applicationId).to.eql(pm.collectionVariables.get('applicationId'));",
+              "    pm.expect(body.status).to.eql(false);",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{token}}" }
-        ],
+        "header": [],
         "url": {
           "raw": "{{baseUrl}}/v1/payment-status/{{applicationId}}",
           "host": ["{{baseUrl}}"],
           "path": ["v1", "payment-status", "{{applicationId}}"]
         },
-        "description": "Returns stored payment status for the most recent submission of this applicationId: { applicationId, status, paymentConfirmedAt, ServiceNo }."
+        "description": "Retrieves payment state and latest evaluation state."
+      }
+    },
+    {
+      "name": "8. Legacy flags lookup",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Legacy route is operational (200 or no record 404)', () => {",
+              "    pm.expect([200, 404]).to.include(pm.response.code);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/flags/{{applicationId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["flags", "{{applicationId}}"]
+        },
+        "description": "Legacy new_form lookup. This test will fail with HTTP 500 while that table is absent; it does not affect /v1 APIs."
       }
     }
   ]
