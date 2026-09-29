@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx test/integration-helpers.test.ts",
+    "preflight": "tsx scripts/preflight.ts",
     "seed-client": "tsx src/seed-client.ts",
     "health-check": "tsx scripts/daily-health.ts"
   },

@@ -314,8 +314,10 @@ Content-Type: application/json
 When `status` is `true` and a `ServiceNo` is present (request body or already stored), we look up the matching evaluator application in bhoomi-suvidha (`land_applications.upsida_service_request_no`), assemble the AI marks + assessment payload, and `POST` it to UPSIDA:
 
 ```
-POST {UPSIDA_API_BASE_URL}/Assessment/SaveAssessment/{ServiceNo}?ServiceNo={ServiceNo}
+POST {UPSIDA_API_BASE_URL}/Assessment/SaveAssessment?ServiceNo={ServiceNo}
 ```
+
+`ServiceNo` is URL-encoded and sent only as a query-string parameter, as required by the UPSIDA Save Assessment API.
 
 - Payment is always saved first. If the UPSIDA push fails (unknown ServiceNo, missing marks/AI eval, network error), the HTTP status stays **200** and `upsidaPush.ok` is `false` with an `error` string.
 - `GET /v1/payment-status/{applicationId}` returns the stored payment fields only (no re-push).

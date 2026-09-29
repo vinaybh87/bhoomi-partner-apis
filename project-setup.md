@@ -146,6 +146,15 @@ The collection saves the token and analysis ID after successful responses.
 
 The analysis request requires reachable HTTP/HTTPS document URLs. A Windows path such as `C:\documents\dpr.pdf` will not work because the API downloads documents over HTTP. Use pre-signed URLs or test the AI service directly with a multipart PDF upload.
 
+When the API runs in Docker and receives local MinIO Console share links such as `http://127.0.0.1:9101/api/v1/download-shared-object/...`, configure an origin rewrite for the container network:
+
+```text
+DOCUMENT_URL_REWRITE_FROM=http://127.0.0.1:9101
+DOCUMENT_URL_REWRITE_TO=http://bhoomi-minio:9001
+```
+
+The API rewrites only the outer Console origin. The share token and its encoded, signed S3 URL are left unchanged.
+
 ## Direct checks
 
 ```powershell

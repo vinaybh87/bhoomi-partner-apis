@@ -7,17 +7,39 @@ import { URL } from 'url';
 
 const insecureHttpsAgent = new https.Agent({ rejectUnauthorized: false });
 
+/**
+ * Translate a document-server origin when the API runs behind a network
+ * boundary such as Docker. Only the origin is replaced, so the path and the
+ * opaque MinIO Console share token remain unchanged.
+ */
+export function resolveDocumentUrl(url: string): string {
+  const rewriteFrom = process.env.DOCUMENT_URL_REWRITE_FROM?.trim();
+  const rewriteTo = process.env.DOCUMENT_URL_REWRITE_TO?.trim();
+  if (!rewriteFrom || !rewriteTo) return url;
+
+  const parsed = new URL(url);
+  const from = new URL(rewriteFrom);
+  if (parsed.origin !== from.origin) return url;
+
+  const to = new URL(rewriteTo);
+  parsed.protocol = to.protocol;
+  parsed.hostname = to.hostname;
+  parsed.port = to.port;
+  return parsed.toString();
+}
+
 export async function fetchDocumentBuffer(
   url: string,
   opts: { timeoutMs?: number } = {}
 ): Promise<Buffer> {
   const timeoutMs = opts.timeoutMs ?? 90_000;
-  const parsed = new URL(url);
+  const resolvedUrl = resolveDocumentUrl(url);
+  const parsed = new URL(resolvedUrl);
 
   // Prefer native fetch for public CA-backed hosts; fall back to insecure
   // agent when TLS verification fails (NM document server).
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+    const res = await fetch(resolvedUrl, { signal: AbortSignal.timeout(timeoutMs) });
     if (!res.ok) throw new Error(`signed URL returned HTTP ${res.status}`);
     return Buffer.from(await res.arrayBuffer());
   } catch (err) {
@@ -36,7 +58,7 @@ export async function fetchDocumentBuffer(
 
   return new Promise<Buffer>((resolve, reject) => {
     const req = https.get(
-      url,
+      resolvedUrl,
       { agent: insecureHttpsAgent, timeout: timeoutMs },
       (res) => {
         if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {

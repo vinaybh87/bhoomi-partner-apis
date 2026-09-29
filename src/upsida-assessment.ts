@@ -30,12 +30,18 @@ export type UpsidaPushResult =
   | { ok: true; httpStatus: number; detail?: unknown }
   | { ok: false; error: string; httpStatus?: number; detail?: unknown };
 
+export function buildSaveAssessmentUrl(baseUrl: string, serviceNo: string): string {
+  const encoded = encodeURIComponent(serviceNo);
+  return `${baseUrl.replace(/\/$/, '')}/Assessment/SaveAssessment?ServiceNo=${encoded}`;
+}
+
 export async function pushSaveAssessment(
   serviceNo: string,
   payload: SaveAssessmentPayload
 ): Promise<UpsidaPushResult> {
-  const encoded = encodeURIComponent(serviceNo);
-  const url = `${UPSIDA_API_BASE_URL.replace(/\/$/, '')}/Assessment/SaveAssessment/${encoded}?ServiceNo=${encoded}`;
+  // SaveHTMLDataMarking.pdf specifies ServiceNo only as a query-string
+  // parameter; it must not also be appended as a route segment.
+  const url = buildSaveAssessmentUrl(UPSIDA_API_BASE_URL, serviceNo);
 
   try {
     const res = await fetch(url, {

@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from 'fs';
-import { completeAnalysisResponse } from '../src/analysis-payload.ts';
+import { completeAnalysisResponse } from '../src/analysis-payload.js';
 
 const raw = readFileSync('/tmp/nm_row.json', 'utf8');
 const row = JSON.parse(raw) as { response: Record<string, unknown>; extraction: unknown };

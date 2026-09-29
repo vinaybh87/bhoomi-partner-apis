@@ -1,0 +1,82 @@
+name: Deploy production
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit, tag, or branch to deploy
+        required: true
+        default: main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bhoomi-partner-apis-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Package tested release
+        shell: bash
+        run: |
+          release_id="$(git rev-parse --short=12 HEAD)"
+          echo "RELEASE_ID=$release_id" >> "$GITHUB_ENV"
+          tar \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.env' \
+            --exclude='keys' \
+            --exclude='node_modules' \
+            --exclude='logs' \
+            -czf "bhoomi-partner-apis-${release_id}.tar.gz" .
+          sha256sum "bhoomi-partner-apis-${release_id}.tar.gz" > "bhoomi-partner-apis-${release_id}.sha256"
+      - name: Configure SSH
+        shell: bash
+        env:
+          PROD_SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
+          PROD_HOST_KEY: ${{ secrets.PROD_HOST_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$PROD_SSH_KEY" > ~/.ssh/production_key
+          chmod 600 ~/.ssh/production_key
+          printf '%s\n' "$PROD_HOST_KEY" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+      - name: Upload release
+        shell: bash
+        env:
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_USER: ${{ secrets.PROD_USER }}
+        run: |
+          ssh -i ~/.ssh/production_key "${PROD_USER}@${PROD_HOST}" \
+            'mkdir -p /home/ubuntu/bhoomi-partner-apis/incoming'
+          scp -i ~/.ssh/production_key \
+            "bhoomi-partner-apis-${RELEASE_ID}.tar.gz" \
+            "bhoomi-partner-apis-${RELEASE_ID}.sha256" \
+            "${PROD_USER}@${PROD_HOST}:/home/ubuntu/bhoomi-partner-apis/incoming/"
+      - name: Deploy and verify
+        shell: bash
+        env:
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_USER: ${{ secrets.PROD_USER }}
+        run: |
+          ssh -i ~/.ssh/production_key "${PROD_USER}@${PROD_HOST}" \
+            "/home/ubuntu/bhoomi-partner-apis/deploy-production.sh \
+            /home/ubuntu/bhoomi-partner-apis/incoming/bhoomi-partner-apis-${RELEASE_ID}.tar.gz \
+            /home/ubuntu/bhoomi-partner-apis/incoming/bhoomi-partner-apis-${RELEASE_ID}.sha256 \
+            ${RELEASE_ID}"
+          curl --fail --show-error --silent --max-time 15 \
+            https://bhoomi-suvidha.kenpath.ai/apis/health
