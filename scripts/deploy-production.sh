@@ -122,5 +122,7 @@ if [[ "$production_ok" != true ]]; then
   exit 1
 fi
 
+cleanup_candidate
+trap - EXIT
 pm2 save
 echo "deployed ${release_id} to port 8011"
