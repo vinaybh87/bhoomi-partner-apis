@@ -27,9 +27,10 @@ environment secrets:
 - `PROD_SSH_KEY`: dedicated deployment private key
 - `PROD_HOST_KEY`: pinned OpenSSH `known_hosts` entry for the server
 
-CI runs automatically for pull requests and `main`. Production deployment is
-manual: run **Deploy production**, enter a tested commit/tag/branch, and approve
-the protected environment.
+CI runs automatically for pull requests and `main`. A successful CI run caused
+by a push to `main` automatically deploys that exact tested commit to production.
+The **Deploy production** manual trigger remains available for recovery or an
+intentional deployment of a specific tested commit, tag, or branch.
 
 Application secrets must remain on the server. Do not add `.env`, JWT keys,
 partner passwords, database URLs, MinIO credentials, or UPSIDA tokens to GitHub.
