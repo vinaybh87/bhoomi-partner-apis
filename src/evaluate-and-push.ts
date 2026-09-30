@@ -495,7 +495,10 @@ function buildPayload(
   };
 
   // Combined mockup HTML + CSS as one compact string, then base64 for the wire.
-  const HTMLDetails = Buffer.from(renderAssessmentHtml(base), 'utf8').toString('base64');
+  const HTMLDetails = Buffer.from(renderAssessmentHtml({
+    ...base,
+    applicantName: opts?.companyName || undefined,
+  }), 'utf8').toString('base64');
 
   return {
     applicationId: base.applicationId,

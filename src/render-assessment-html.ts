@@ -85,328 +85,135 @@ function leanClass(lean: string): string {
 
 const INLINE_CSS = `
 :root {
-  --bg: #eef1f6;
-  --card: #ffffff;
-  --text: #111827;
-  --muted: #4b5563;
-  --border: #94a3b8;
-  --border-soft: #cbd5e1;
-  --primary: #0b3d6e;
-  --ok: #047857;
-  --ok-bg: #ecfdf5;
-  --warn: #b45309;
-  --warn-bg: #fffbeb;
-  --bad: #b91c1c;
-  --bad-bg: #fef2f2;
-  --info: #1d4ed8;
-  --info-bg: #eff6ff;
-  --table-head: #0b3d6e;
-  --shadow: 0 2px 6px rgba(15,23,42,.10);
+  --bg: #ffffff;
+  --card: #f7f9fc;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #dce4ef;
+  --primary: #1c3e6c;
+  --ok: #07834f;
+  --ok-bg: #dcfce9;
+  --warn: #a66b00;
+  --warn-bg: #fff4d8;
+  --bad: #c43223;
+  --bad-bg: #fee5e2;
+  --info: #345fd1;
+  --info-bg: #edf2ff;
   --radius: 8px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.5;
   color: var(--text);
   background: var(--bg);
-  padding: 20px 16px 40px;
+  padding: 20px 16px 32px;
 }
 .wrap { max-width: 1100px; margin: 0 auto; }
-.header {
-  background: linear-gradient(135deg, #0b3d6e 0%, #155e9c 55%, #0f766e 100%);
-  color: #fff;
-  border: 2px solid #082f54;
-  border-radius: var(--radius);
-  padding: 22px 24px;
-  box-shadow: var(--shadow);
-  margin-bottom: 18px;
-}
-.header h1 {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: .01em;
-  margin-bottom: 8px;
-  line-height: 1.2;
-}
-.header .sub {
-  opacity: .95;
-  font-size: 13px;
-  font-weight: 600;
-  border-top: 1px solid rgba(255,255,255,.35);
-  padding-top: 10px;
-  margin-top: 4px;
-}
-.pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,.18);
-  border: 1.5px solid rgba(255,255,255,.45);
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-}
-.pill strong { font-weight: 800; }
-.lean-ok { background: #059669; border-color: #047857; }
-.lean-warn { background: #d97706; border-color: #b45309; }
-.lean-bad { background: #dc2626; border-color: #b91c1c; }
-.lean-neutral { background: rgba(255,255,255,.22); }
-
-.section {
+.header, .section {
   background: var(--card);
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
   margin-bottom: 14px;
   overflow: hidden;
 }
+.header { display: flex; align-items: center; gap: 16px; padding: 20px; }
+.header-icon {
+  display: grid; place-items: center; flex-shrink: 0;
+  width: 52px; height: 52px; border: 2px solid var(--primary);
+  border-radius: 50%; color: var(--primary);
+}
+.header-content { min-width: 0; flex: 1; }
+.header h1 { font-size: 20px; font-weight: 650; line-height: 1.3; overflow-wrap: anywhere; }
+.eyebrow { color: var(--primary); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; }
+.metadata { display: flex; flex-wrap: wrap; gap: 4px 24px; margin-top: 8px; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.metadata strong { color: var(--text); font-weight: 500; }
+.section > summary, .section-heading {
+  padding: 15px 18px; color: var(--text);
+  font-size: 13px; font-weight: 650; line-height: 1.5;
+}
 .section > summary {
-  list-style: none;
-  cursor: pointer;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 15px 18px;
-  background: #f1f5f9;
-  border-bottom: 2px solid transparent;
-  font-weight: 800;
-  font-size: 15.5px;
-  color: var(--primary);
-  letter-spacing: .01em;
+  list-style: none; cursor: pointer; user-select: none;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
 .section > summary::-webkit-details-marker { display: none; }
 .section > summary::after {
-  content: "";
-  width: 9px;
-  height: 9px;
-  border-right: 2.5px solid var(--primary);
-  border-bottom: 2.5px solid var(--primary);
-  transform: rotate(45deg);
-  transition: transform .15s ease;
-  flex-shrink: 0;
-  margin-top: -4px;
+  content: ""; width: 7px; height: 7px; flex-shrink: 0;
+  border-right: 1.5px solid var(--primary); border-bottom: 1.5px solid var(--primary);
+  transform: rotate(45deg); margin: -4px 2px 0 8px;
 }
-.section[open] > summary {
-  border-bottom: 2px solid var(--border);
-  background: #e2eef9;
-}
-.section[open] > summary::after {
-  transform: rotate(-135deg);
-  margin-top: 4px;
-}
-.section .body {
-  padding: 16px 18px 18px;
-  border-top: 0;
-}
-.section .title-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  font-weight: 800;
-}
-.badge {
-  font-size: 11px;
-  font-weight: 800;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: #e2e8f0;
-  color: #1e293b;
-  border: 1px solid #94a3b8;
-}
-.badge-ok { background: var(--ok-bg); color: var(--ok); border-color: #6ee7b7; }
-.badge-warn { background: var(--warn-bg); color: var(--warn); border-color: #fcd34d; }
-.badge-bad { background: var(--bad-bg); color: var(--bad); border-color: #fca5a5; }
-.badge-info { background: var(--info-bg); color: var(--info); border-color: #93c5fd; }
-
-.headline {
-  font-size: 17px;
-  font-weight: 800;
-  color: var(--text);
-  margin-bottom: 12px;
-  line-height: 1.35;
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--border);
-}
-.narrative {
-  color: var(--muted);
-  font-size: 13.5px;
-  line-height: 1.65;
-  margin-bottom: 14px;
-  font-weight: 500;
-}
-.two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-@media (max-width: 720px) {
-  .two-col { grid-template-columns: 1fr; }
-}
-.card {
-  border-radius: 8px;
-  border: 2px solid var(--border-soft);
-  padding: 12px 14px;
-  background: #fafbfc;
-}
-.card h3 {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  margin-bottom: 10px;
-  font-weight: 800;
-  padding-bottom: 6px;
-  border-bottom: 2px solid currentColor;
-}
-.card-ok { border-color: #34d399; background: var(--ok-bg); }
+.section[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
+summary:focus-visible, .table-wrap:focus-visible { outline: 2px solid var(--info); outline-offset: -3px; }
+.title-left { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; text-transform: uppercase; letter-spacing: .02em; }
+.section-description { display: block; color: var(--muted); font-size: 12px; font-weight: 400; margin-top: 3px; }
+.section .body { padding: 0 18px 18px; }
+.badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 5px; background: #e9eef5; color: var(--muted); text-transform: none; letter-spacing: normal; }
+.badge-ok { background: var(--ok-bg); color: var(--ok); }
+.badge-warn { background: var(--warn-bg); color: var(--warn); }
+.badge-bad { background: var(--bad-bg); color: var(--bad); }
+.badge-info { background: var(--info-bg); color: var(--info); }
+.metrics { display: grid; grid-template-columns: 1.3fr repeat(4, 1fr); background: white; border: 1px solid var(--border); border-radius: 6px; padding: 20px 0; }
+.metric { padding: 0 16px; text-align: center; border-left: 1px solid var(--border); }
+.metric:first-child { border-left: 0; }
+.metric dt { color: var(--primary); font-size: 11px; text-transform: uppercase; margin-bottom: 8px; }
+.metric dd { font-size: 24px; font-weight: 650; font-variant-numeric: tabular-nums; color: #111827; }
+.metric dd small { font-size: 16px; font-weight: 500; }
+.metric .value-ok { color: var(--ok); }
+.metric .value-bad { color: var(--bad); }
+.metric .value-warn { color: var(--warn); }
+.support-note { color: var(--muted); font-size: 11px; margin-top: 12px; }
+.headline { font-size: 15px; font-weight: 600; color: var(--primary); margin-bottom: 8px; }
+.narrative { color: var(--muted); font-size: 13px; line-height: 1.65; margin-bottom: 14px; overflow-wrap: anywhere; }
+.two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.card { border: 1px solid var(--border); border-radius: 6px; padding: 14px; background: #fff; overflow-wrap: anywhere; }
+.card h3 { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
 .card-ok h3 { color: var(--ok); }
-.card-warn { border-color: #fbbf24; background: var(--warn-bg); }
 .card-warn h3 { color: var(--warn); }
-.card-bad { border-color: #f87171; background: var(--bad-bg); }
-.card-bad h3 { color: var(--bad); }
-.card ul { margin: 0; padding-left: 18px; }
-.card li {
-  margin: 6px 0;
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.45;
-}
-
-.flag {
-  border: 1.5px solid var(--border-soft);
-  border-left: 5px solid #64748b;
-  background: #f8fafc;
-  border-radius: 0 8px 8px 0;
-  padding: 11px 13px;
-  margin-bottom: 10px;
-}
+.card ul { padding-left: 18px; }
+.card li { font-size: 13px; margin: 5px 0; }
+.flag { background: #fff; border: 1px solid var(--border); border-left: 3px solid var(--info); border-radius: 5px; padding: 12px; margin-bottom: 8px; overflow-wrap: anywhere; }
 .flag:last-child { margin-bottom: 0; }
-.flag .flag-title {
-  font-weight: 800;
-  font-size: 13.5px;
-  margin-bottom: 4px;
-  color: var(--text);
+.flag-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.flag-detail { font-size: 12px; color: var(--muted); }
+.sev-critical { border-left-color: var(--bad); }
+.sev-warning { border-left-color: var(--warn); }
+.sev-verified { border-left-color: var(--ok); }
+.sev-info { border-left-color: var(--info); }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
+table.data { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 12px; }
+table.data th { background: #f0f3f8; color: var(--muted); text-align: left; font-size: 11px; font-weight: 600; padding: 11px 12px; }
+table.data td { padding: 14px 12px; border-top: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
+table.data tbody tr:hover { background: #f8faff; }
+table.data .param { font-weight: 500; width: 23%; }
+table.data .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 72px; }
+table.data .status { width: 110px; }
+table.data .insight { color: var(--muted); line-height: 1.6; }
+table.data tfoot td { background: #f0f3f8; font-weight: 600; color: var(--primary); }
+.score-bar { height: 5px; background: #e9eef5; border-radius: 999px; overflow: hidden; margin-top: 8px; max-width: 130px; }
+.score-bar > span { display: block; height: 100%; background: var(--primary); border-radius: 999px; }
+.footer-note { margin-top: 20px; text-align: center; font-size: 11px; color: var(--muted); }
+@media (max-width: 720px) {
+  body { padding: 12px 8px 24px; }
+  .header { padding: 16px 12px; gap: 12px; }
+  .header h1 { font-size: 17px; }
+  .header-icon { width: 42px; height: 42px; }
+  .metadata { flex-direction: column; }
+  .section > summary, .section-heading { padding: 12px; }
+  .section .body { padding: 0 12px 12px; }
+  .two-col { grid-template-columns: 1fr; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; }
+  .metric { padding: 16px 10px; border-top: 1px solid var(--border); }
+  .metric:first-child { grid-column: 1 / -1; border-top: 0; }
+  .metric:nth-child(even) { border-left: 0; }
+  .metric dd { font-size: 22px; }
 }
-.flag .flag-meta {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--muted);
-  margin-bottom: 5px;
-  text-transform: uppercase;
-  letter-spacing: .03em;
-}
-.flag .flag-detail {
-  font-size: 13px;
-  color: var(--text);
-  line-height: 1.5;
-  font-weight: 500;
-}
-.sev-critical { border-left-color: var(--bad); border-color: #fca5a5; background: var(--bad-bg); }
-.sev-warning { border-left-color: var(--warn); border-color: #fcd34d; background: var(--warn-bg); }
-.sev-verified { border-left-color: var(--ok); border-color: #6ee7b7; background: var(--ok-bg); }
-.sev-info { border-left-color: var(--info); border-color: #93c5fd; background: var(--info-bg); }
-
-.table-wrap {
-  overflow-x: auto;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-}
-table.data {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  min-width: 560px;
-}
-table.data thead th {
-  background: var(--table-head);
-  color: #fff;
-  text-align: left;
-  padding: 11px 12px;
-  font-weight: 800;
-  white-space: nowrap;
-  border: 1px solid #082f54;
-  font-size: 12.5px;
-  letter-spacing: .02em;
-  text-transform: uppercase;
-}
-table.data tbody td {
-  padding: 11px 12px;
-  border: 1px solid var(--border-soft);
-  vertical-align: top;
-  color: var(--text);
-}
-table.data tbody tr:nth-child(even) { background: #f1f5f9; }
-table.data tbody tr:hover { background: #e0f2fe; }
-table.data tbody tr.row-ok,
-table.data tbody tr.row-ok:nth-child(even) { background: var(--ok-bg); }
-table.data tbody tr.row-ok:hover { background: #d1fae5; }
-table.data tbody tr.row-warn,
-table.data tbody tr.row-warn:nth-child(even) { background: var(--warn-bg); }
-table.data tbody tr.row-warn:hover { background: #fde68a; }
-table.data tbody tr.row-bad,
-table.data tbody tr.row-bad:nth-child(even) { background: var(--bad-bg); }
-table.data tbody tr.row-bad:hover { background: #fecaca; }
-table.data tbody tr.row-info,
-table.data tbody tr.row-info:nth-child(even) { background: var(--info-bg); }
-table.data tbody tr.row-info:hover { background: #dbeafe; }
-table.data td.status { white-space: nowrap; width: 110px; }
-table.data td.param {
-  font-weight: 800;
-  color: var(--primary);
-  width: 22%;
-}
-table.data td.num {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  font-weight: 800;
-  white-space: nowrap;
-  width: 72px;
-}
-table.data td.insight {
-  color: var(--muted);
-  font-size: 12.5px;
-  line-height: 1.5;
-  font-weight: 500;
-}
-table.data tfoot td {
-  background: #dbeafe;
-  font-weight: 800;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-top: 3px solid var(--primary);
-  color: var(--text);
-}
-.score-bar {
-  height: 9px;
-  background: #e2e8f0;
-  border: 1px solid var(--border-soft);
-  border-radius: 999px;
-  overflow: hidden;
-  margin-top: 6px;
-  max-width: 130px;
-}
-.score-bar > span {
-  display: block;
-  height: 100%;
-  background: linear-gradient(90deg, #0d9488, #0b3d6e);
-  border-radius: 999px;
-}
-.footer-note {
-  margin-top: 18px;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--muted);
-  border-top: 2px solid var(--border-soft);
-  padding-top: 12px;
+@media print {
+  body { padding: 0; }
+  .wrap { max-width: none; }
+  .table-wrap { overflow: visible; }
+  table.data { min-width: 0; }
+  .header, .metrics, tr, .card, .flag { break-inside: avoid; }
 }
 `.replace(/\s+/g, ' ').trim();
 
@@ -436,9 +243,8 @@ export function renderAssessmentHtml(data: AssessmentHtmlInput): string {
   const total = data.marksEvaluation?.total ?? data.aiSuggestedScore?.value ?? 0;
   const maxScore = data.marksEvaluation?.max ?? data.aiSuggestedScore?.scale ?? 100;
   const passMark = data.marksEvaluation?.passMark ?? data.aiSuggestedScore?.passMark ?? 60;
-  const pct = maxScore > 0 ? Math.min(100, Math.round((total / maxScore) * 100)) : 0;
 
-  const applicant = esc(data.applicantName ?? data.applicationId);
+  const applicant = esc(data.applicantName?.trim() || 'AI Assisted Assessment');
   const generatedAt = esc(data.generatedAt ?? new Date().toISOString());
 
   const strengthLis = strengths.map((s) => `<li>${s}</li>`).join('') || '<li>None listed</li>';
@@ -471,6 +277,14 @@ export function renderAssessmentHtml(data: AssessmentHtmlInput): string {
     }
     return { label: label || 'Pending', rowClass: 'row-info', badge: 'badge-info' };
   };
+
+  const checkCounts = { passed: 0, flagged: 0, pending: 0 };
+  for (const flag of flags) {
+    const { rowClass } = flagStatusMeta(flag);
+    if (rowClass === 'row-ok') checkCounts.passed++;
+    else if (rowClass === 'row-bad' || rowClass === 'row-warn') checkCounts.flagged++;
+    else checkCounts.pending++;
+  }
 
   const flagRows = flags
     .map((f) => {
@@ -508,7 +322,7 @@ export function renderAssessmentHtml(data: AssessmentHtmlInput): string {
     .map((p) => {
       const max = Number(p.max) || 0;
       const score = Number(p.score) || 0;
-      const bar = max > 0 ? Math.min(100, Math.round((score / max) * 100)) : 0;
+      const bar = max > 0 ? Math.max(0, Math.min(100, Math.round((score / max) * 100))) : 0;
       return `<tr>
         <td class="param">${esc(p.parameter)}</td>
         <td class="num">${esc(score)}</td>
@@ -531,12 +345,37 @@ export function renderAssessmentHtml(data: AssessmentHtmlInput): string {
 <body>
 <div class="wrap">
   <header class="header">
-    <h1>AI Assisted Assessment</h1>
-    <div class="sub">Application: <strong>${applicant}</strong> · Generated ${generatedAt}</div>
-    <div class="pills">
-      <span class="pill">Score <strong>${esc(total)}</strong> / ${esc(maxScore)}</span>
+    <span class="header-icon" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M5 24V4h11v20M16 11h7v13M3 24h22M9 8h3M9 12h3M9 16h3M9 24v-4h3v4M19 15h1M19 19h1"/>
+      </svg>
+    </span>
+    <div class="header-content">
+      <p class="eyebrow">UPSIDA / AI Assisted Assessment</p>
+      <h1>${applicant}</h1>
+      <div class="metadata">
+        <span><strong>Application ID:</strong> ${esc(data.applicationId)}</span>
+        <span><strong>Generated:</strong> ${generatedAt}</span>
+      </div>
     </div>
   </header>
+
+  <section class="section" aria-labelledby="overview-heading">
+    <h2 class="section-heading" id="overview-heading">
+      <span class="title-left">Assessment overview</span>
+      <span class="section-description">System-generated score and assessment checks</span>
+    </h2>
+    <div class="body">
+      <dl class="metrics">
+        <div class="metric"><dt>System score</dt><dd>${esc(total)}<small> / ${esc(maxScore)}</small></dd></div>
+        <div class="metric"><dt>Scoring parameters</dt><dd>${params.length}</dd></div>
+        <div class="metric"><dt>Checks passed</dt><dd class="value-ok">${checkCounts.passed}</dd></div>
+        <div class="metric"><dt>Checks flagged</dt><dd class="value-bad">${checkCounts.flagged}</dd></div>
+        <div class="metric"><dt>Checks pending</dt><dd class="value-warn">${checkCounts.pending}</dd></div>
+      </dl>
+      <p class="support-note">System-generated scores are provided as decision support. Final assessment is subject to authorised review.</p>
+    </div>
+  </section>
 
   <details class="section" open>
     <summary><span class="title-left">Summary <span class="badge ${leanClass(lean) === 'lean-bad' ? 'badge-bad' : leanClass(lean) === 'lean-ok' ? 'badge-ok' : 'badge-warn'}">${esc(lean || 'summary')}</span></span></summary>
@@ -557,9 +396,9 @@ export function renderAssessmentHtml(data: AssessmentHtmlInput): string {
   </details>
 
   <details class="section" open>
-    <summary><span class="title-left">Flags <span class="badge badge-info">${flags.length}</span></span></summary>
+    <summary><span class="title-left">Assessment checks <span class="badge badge-info">${flags.length}</span></span></summary>
     <div class="body">
-      <div class="table-wrap">
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable assessment table">
         <table class="data">
           <thead>
             <tr>
@@ -570,36 +409,19 @@ export function renderAssessmentHtml(data: AssessmentHtmlInput): string {
               <th>Remarks</th>
             </tr>
           </thead>
-          <tbody>${flagRows || '<tr><td colspan="5">No flags</td></tr>'}</tbody>
+          <tbody>${flagRows || '<tr><td colspan="5">No assessment checks</td></tr>'}</tbody>
         </table>
       </div>
     </div>
   </details>
 
-  <details class="section">
-    <summary><span class="title-left">DPR vs GST comparisons <span class="badge badge-info">${comparisons.length}</span></span></summary>
-    <div class="body">
-      <div class="table-wrap">
-        <table class="data">
-          <thead>
-            <tr>
-              <th>Parameter</th>
-              <th>DPR</th>
-              <th>GST</th>
-              <th>AI analysis</th>
-            </tr>
-          </thead>
-          <tbody>${cmpRows || '<tr><td colspan="4">No comparisons</td></tr>'}</tbody>
-        </table>
-      </div>
-    </div>
-  </details>
+
 
   ${(() => {
     const mca = data.mcaVerification;
     if (!mca) {
-      return `<details class="section">
-        <summary><span class="title-left">MCA verification <span class="badge badge-info">mca.gov.in</span></span></summary>
+      return `<details class="section" open>
+        <summary><span class="title-left">MCA Verifications <span class="badge badge-warn">Unavailable</span></span></summary>
         <div class="body"><p class="narrative">MCA verification not available.</p></div>
       </details>`;
     }
@@ -621,15 +443,16 @@ export function renderAssessmentHtml(data: AssessmentHtmlInput): string {
           )
           .join('')
       : '';
-    return `<details class="section">
-    <summary><span class="title-left">MCA verification <span class="badge badge-info">mca.gov.in</span></span></summary>
+    const isMock = /mock/i.test(mca.status || '') || /mock/i.test(mca.source || '');
+    return `<details class="section" open>
+    <summary><span class="title-left">MCA Verifications <span class="badge ${isMock ? 'badge-warn' : 'badge-info'}">${esc(isMock ? 'Mock data' : mca.status || 'Status unavailable')}</span></span></summary>
     <div class="body">
-      <div class="table-wrap">
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable assessment table">
         <table class="data">
           <thead><tr><th>Field</th><th>MCA record</th></tr></thead>
           <tbody>
-            <tr><td class="param">Status</td><td>${esc(mca.status || 'MOCK')}</td></tr>
-            <tr><td class="param">Source</td><td>${esc(mca.source || 'mca.gov.in (mock)')}</td></tr>
+            <tr><td class="param">Status</td><td>${esc(mca.status || 'N/A')}</td></tr>
+            <tr><td class="param">Source</td><td>${esc(mca.source || 'N/A')}</td></tr>
             <tr><td class="param">CIN</td><td>${esc(mca.cin || 'N/A')}</td></tr>
             <tr><td class="param">Company name</td><td>${esc(mca.companyName || 'N/A')}</td></tr>
             <tr><td class="param">Company status</td><td>${esc(mca.companyStatus || 'N/A')}</td></tr>
@@ -641,7 +464,7 @@ export function renderAssessmentHtml(data: AssessmentHtmlInput): string {
       ${
         directors.length
           ? `<div class="headline" style="margin-top:14px">Directors (MCA)</div>
-      <div class="table-wrap">
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable assessment table">
         <table class="data">
           <thead><tr><th>Name</th><th>Designation</th></tr></thead>
           <tbody>${dirRows}</tbody>
@@ -654,39 +477,30 @@ export function renderAssessmentHtml(data: AssessmentHtmlInput): string {
   </details>`;
   })()}
 
-  ${(() => {
-    const hist = data.historyVerification;
-    const applied = hist?.hasAppliedBefore === true;
-    const unavailable = hist?.status === 'UNAVAILABLE';
-    const msg = hist?.message || (applied ? 'Prior land allotments found.' : 'No prior application.');
-    const projects = hist?.priorApplications || [];
-    const projectRows = projects.map((project) => `<tr>
-      <td>${esc(project.applicantId)}</td>
-      <td>${esc(project.industryType)}</td>
-      <td>${esc(project.landDetails)}</td>
-      <td>${esc(project.buildingDetails)}</td>
-    </tr>`).join('');
-    const badge = unavailable ? 'badge-warn' : applied ? 'badge-warn' : 'badge-ok';
-    const label = unavailable ? 'Lookup unavailable' : applied ? 'Prior application' : 'No prior application';
-    return `<details class="section">
-    <summary><span class="title-left">History verification <span class="badge ${badge}">${label}</span></span></summary>
+  <details class="section" open>
+    <summary><span class="title-left">GST Verifications <span class="badge badge-info">${comparisons.length}</span></span></summary>
     <div class="body">
-      <div class="card ${applied || unavailable ? 'card-warn' : 'card-ok'}">
-        <h3>Lands allotted for this applicant</h3>
-        <p class="narrative" style="margin:0;font-weight:700;color:var(--text)">${esc(msg)}</p>
-        ${projects.length ? `<div class="table-wrap" style="margin-top:14px"><table class="data">
-          <thead><tr><th>Applicant ID</th><th>Industry Type</th><th>Land Details</th><th>Building Details</th></tr></thead>
-          <tbody>${projectRows}</tbody>
-        </table></div>` : ''}
+      <p class="narrative">Comparison of GST records with information provided in the application/DPR.</p>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable assessment table">
+        <table class="data">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>DPR</th>
+              <th>GST</th>
+              <th>AI analysis</th>
+            </tr>
+          </thead>
+          <tbody>${cmpRows || '<tr><td colspan="4">No comparisons</td></tr>'}</tbody>
+        </table>
       </div>
     </div>
-  </details>`;
-  })()}
+  </details>
 
-  <details class="section">
+  <details class="section" open>
     <summary><span class="title-left">Marks evaluation <span class="badge badge-info">${esc(total)} / ${esc(maxScore)}</span></span></summary>
     <div class="body">
-      <div class="table-wrap">
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable assessment table">
         <table class="data">
           <thead>
             <tr>
@@ -710,7 +524,36 @@ export function renderAssessmentHtml(data: AssessmentHtmlInput): string {
     </div>
   </details>
 
-  <p class="footer-note">UPSIDA AI Assisted Assessment · collapsible sections · inline CSS · base64 transport</p>
+  ${(() => {
+    const hist = data.historyVerification;
+    const applied = hist?.hasAppliedBefore === true;
+    const unavailable = !hist || hist.status === 'UNAVAILABLE';
+    const msg = hist?.message || (unavailable ? 'History lookup unavailable.' : applied ? 'Prior land allotments found.' : 'No prior application.');
+    const projects = hist?.priorApplications || [];
+    const projectRows = projects.map((project) => `<tr>
+      <td>${esc(project.applicantId)}</td>
+      <td>${esc(project.industryType)}</td>
+      <td>${esc(project.landDetails)}</td>
+      <td>${esc(project.buildingDetails)}</td>
+    </tr>`).join('');
+    const badge = unavailable ? 'badge-warn' : applied ? 'badge-warn' : 'badge-ok';
+    const label = unavailable ? 'Lookup unavailable' : applied ? 'Prior application' : 'No prior application';
+    return `<details class="section" open>
+    <summary><span><span class="title-left">Historical records <span class="badge ${badge}">${label}</span></span><span class="section-description">Previous applications and allotment history with UPSIDA.</span></span></summary>
+    <div class="body">
+      <div class="card ${applied || unavailable ? 'card-warn' : 'card-ok'}">
+        <h3>Lands allotted for this applicant</h3>
+        <p class="narrative" style="margin:0;font-weight:700;color:var(--text)">${esc(msg)}</p>
+        ${projects.length ? `<div class="table-wrap" tabindex="0" role="region" aria-label="Historical records table" style="margin-top:14px"><table class="data">
+          <thead><tr><th>Applicant ID</th><th>Industry Type</th><th>Land Details</th><th>Building Details</th></tr></thead>
+          <tbody>${projectRows}</tbody>
+        </table></div>` : ''}
+      </div>
+    </div>
+  </details>`;
+  })()}
+
+  <p class="footer-note">UPSIDA AI Assisted Assessment</p>
 </div>
 </body>
 </html>`;
